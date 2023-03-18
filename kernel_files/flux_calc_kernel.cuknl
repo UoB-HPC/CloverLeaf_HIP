@@ -1,3 +1,4 @@
+#include "hip/hip_runtime.h"
 
 __global__ void device_flux_calc_kernel_cuda
 (int x_min,int x_max,int y_min,int y_max,

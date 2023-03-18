@@ -66,14 +66,14 @@ const int g_point)
     // only copied and used one time, don't care about speed.
     #define CUDA_ALLOC_ARRAY(arr, type)             \
         type* state_ ## arr ## _d;                  \
-        cudaMalloc((void**) &state_ ## arr ## _d,   \
+        hipMalloc((void**) &state_ ## arr ## _d,   \
                     number_of_states*sizeof(type)   \
-                   ) == cudaSuccess;                \
+                   ) == hipSuccess;                \
         errorHandler(__LINE__, __FILE__);           \
-        cudaMemcpy(state_ ## arr ## _d,             \
+        hipMemcpy(state_ ## arr ## _d,             \
                      state_ ## arr,                 \
                      number_of_states*sizeof(type), \
-                     cudaMemcpyHostToDevice);       \
+                     hipMemcpyHostToDevice);       \
         CUDA_ERR_CHECK;
 
     CUDA_ALLOC_ARRAY(density, double);
@@ -101,15 +101,15 @@ const int g_point)
             state_radius_d, state_geometry_d, g_rect, g_circ, g_point, state);
     }
 
-    cudaFree(state_density_d);
-    cudaFree(state_energy_d);
-    cudaFree(state_xvel_d);
-    cudaFree(state_yvel_d);
-    cudaFree(state_xmin_d);
-    cudaFree(state_xmax_d);
-    cudaFree(state_ymin_d);
-    cudaFree(state_ymax_d);
-    cudaFree(state_radius_d);
-    cudaFree(state_geometry_d);
+    hipFree(state_density_d);
+    hipFree(state_energy_d);
+    hipFree(state_xvel_d);
+    hipFree(state_yvel_d);
+    hipFree(state_xmin_d);
+    hipFree(state_xmax_d);
+    hipFree(state_ymin_d);
+    hipFree(state_ymax_d);
+    hipFree(state_radius_d);
+    hipFree(state_geometry_d);
 }
 

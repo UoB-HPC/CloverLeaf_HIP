@@ -24,8 +24,8 @@ ifndef COMPILER
   MESSAGE=select a compiler to compile in OpenMP, e.g. make COMPILER=INTEL
 endif
 
-ifndef NV_ARCH
-  MESSAGE=select an NVIDA device to compile in CUDA, e.g. make NV_ARCH=KEPLER
+ifndef AMDGCN_ARCH
+  MESSAGE=select an AMDGCN device to compile in HIP, e.g. make AMDGCN_ARCH=gfx906
 endif
 
 OMP_INTEL     = -openmp
@@ -65,7 +65,7 @@ ifdef DEBUG
   FLAGS_          = -O0 -g
   CFLAGS_INTEL    = -O0 -g -c -debug all -traceback -restrict
   CFLAGS_CRAY     = -O0 -g -em -eD
-  NV_FLAGS += -g -G
+  HIP_FLAGS += -g -G
 endif
 
 ifdef IEEE
@@ -80,38 +80,32 @@ ifdef IEEE
 endif
 
 # flags for nvcc
-# set NV_ARCH to select the correct one
-NV_ARCH=KEPLER
-CODE_GEN_FERMI=-gencode arch=compute_20,code=sm_21
-CODE_GEN_KEPLER=-gencode arch=compute_35,code=sm_35
-CODE_GEN_KEPLER_CONSUMER=-gencode arch=compute_30,code=sm_30
-CODE_GEN_MAXWELL=-gencode arch=compute_50,code=sm_50
-CODE_GEN_PASCAL=-gencode arch=compute_60,code=sm_60
-CODE_GEN_VOLTA=-gencode arch=compute_70,code=sm_70
-CODE_GEN_AMPERE=-gencode arch=compute_80,code=sm_80
+# set AMDGCN_ARCH to select the correct one
+AMDGCN_ARCH=gfx906
+ 
 
-LDLIBS+=-lstdc++ -lcudart
+LDLIBS+=-lstdc++ #-lcudart
 
 FLAGS=$(FLAGS_$(COMPILER)) $(OMP) $(I3E) $(OPTIONS)
 CFLAGS=$(CFLAGS_$(COMPILER)) $(OMP) $(I3E) $(C_OPTIONS) -c
 MPI_COMPILER=mpif90
 C_MPI_COMPILER=mpicc
 
-NV_FLAGS+=-D MANUALLY_CHOOSE_GPU
+HIP_FLAGS+=-D MANUALLY_CHOOSE_GPU
 
 # requires CUDA_HOME to be set - not the same on all machines
-NV_FLAGS=-I$(CUDA_HOME)/include $(CODE_GEN_$(NV_ARCH)) -restrict -Xcompiler "$(CFLAGS_GNU)" -D MPI_HDR $(NV_OPTIONS)
-NV_FLAGS+=-D NO_ERR_CHK
+HIP_FLAGS= --amdgpu-target=$(AMDGCN_ARCH)  #-I$(CUDA_HOME)/include $(CODE_GEN_$(AMDGCN_ARCH)) -restrict -Xcompiler "$(CFLAGS_GNU)" -D MPI_HDR $(NV_OPTIONS)
+HIP_FLAGS+=-D NO_ERR_CHK
 libdir.x86_64 = lib64
 libdir.i686   = lib
 MACHINE := $(shell uname -m)
 libdir = $(libdir.$(MACHINE))
-LDFLAGS+=-L$(CUDA_HOME)/$(libdir)
+LDFLAGS+=-L$(HIP_HOME)/lib -lamdhip64  # -L$(CUDA_HOME)/$(libdir)
 
 ifdef DEBUG
-NV_FLAGS+=-O0 -g -G
+HIP_FLAGS+=-O0 -g -G
 else
-NV_FLAGS+=-O3
+HIP_FLAGS+=-O3
 endif
 
 C_FILES=\
@@ -211,7 +205,7 @@ clover_leaf: Makefile $(FORTRAN_FILES) $(C_FILES) $(CUDA_FILES)
 include make.deps
 
 %.o: %.cu Makefile make.deps
-	nvcc $(NV_FLAGS) -c $< -o $*.o
+	hipcc $(HIP_FLAGS) -c $< -o $*.o
 %.mod %_module.mod %_leaf_module.mod: %.f90 %.o
 	@true
 %.o: %.f90 Makefile make.deps

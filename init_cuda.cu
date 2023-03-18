@@ -85,34 +85,34 @@ num_blocks((((*in_x_max)+5)*((*in_y_max)+5))/BLOCK_SZ)
 
 #ifdef MANUALLY_CHOOSE_GPU
     // choose device 0 unless specified
-    cudaThreadExit();
+    hipDeviceReset();
     int num_devices;
-    cudaGetDeviceCount(&num_devices);
+    hipGetDeviceCount(&num_devices);
 
     fprintf(stdout, "%d devices available in rank %d - would use %d - adding %d - choosing %d\n",
             num_devices, rank, device_id, rank%num_devices, device_id + rank % num_devices);
     fflush(stdout);
     device_id += rank % num_devices;
 
-    int err = cudaSetDevice(device_id);
+    int err = hipSetDevice(device_id);
 
-    if (err != cudaSuccess)
+    if (err != hipSuccess)
     {
         fprintf(stderr, "Setting device id to %d in rank %d failed with error code %d\n", device_id, rank, err);
         errorHandler(__LINE__, __FILE__);
     }
 #endif
 
-    struct cudaDeviceProp prop;
-    cudaGetDeviceProperties(&prop, device_id);
+    struct hipDeviceProp_t prop;
+    hipGetDeviceProperties(&prop, device_id);
     std::cout << "CUDA using " << prop.name << std::endl;
 
     #define CUDA_ARRAY_ALLOC(arr, size)     \
-            cudaMalloc((void**) &arr, size) == cudaSuccess;\
+            hipMalloc((void**) &arr, size) == hipSuccess;\
             errorHandler(__LINE__, __FILE__);\
-            cudaDeviceSynchronize();        \
-            cudaMemset(arr, 0, size);       \
-            cudaDeviceSynchronize();        \
+            hipDeviceSynchronize();        \
+            hipMemset(arr, 0, size);       \
+            hipDeviceSynchronize();        \
             CUDA_ERR_CHECK;
 
     CUDA_ARRAY_ALLOC(volume, BUFSZ2D(0, 0));

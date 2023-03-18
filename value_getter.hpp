@@ -9,7 +9,7 @@ public:
 	inline static T from_device(T* buffer_d, int index)
 	{
 	  T val;
-	  cudaMemcpy(&val, &buffer_d[index], sizeof(T), cudaMemcpyDeviceToHost);
+	  hipMemcpy(&val, &buffer_d[index], sizeof(T), hipMemcpyDeviceToHost);
 	  CUDA_ERR_CHECK;
 	  return val;
 	}

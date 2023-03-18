@@ -48,8 +48,8 @@ int depth)
     {                                                                   \
         if (profiler_on)                                                \
         {                                                               \
-            cudaEventCreate(&_t0);                                      \
-            cudaEventRecord(_t0);                                       \
+            hipEventCreate(&_t0);                                      \
+            hipEventRecord(_t0);                                       \
         }                                                               \
         const int launch_sz = (ceil((dir##_max+5+grid_type.dir##_extra) \
             /static_cast<float>(BLOCK_SZ))) * depth;                    \
@@ -59,10 +59,10 @@ int depth)
         CUDA_ERR_CHECK;                                                 \
         if (profiler_on)                                                \
         {                                                               \
-            cudaEventCreate(&_t1);                                      \
-            cudaEventRecord(_t1);                                       \
-            cudaEventSynchronize(_t1);                                  \
-            cudaEventElapsedTime(&taken, _t0, _t1);                     \
+            hipEventCreate(&_t1);                                      \
+            hipEventRecord(_t1);                                       \
+            hipEventSynchronize(_t1);                                  \
+            hipEventElapsedTime(&taken, _t0, _t1);                     \
             std::string func_name("device_update_halo_kernel_"#face);   \
             if (kernel_times.end() != kernel_times.find(func_name))     \
             {                                                           \

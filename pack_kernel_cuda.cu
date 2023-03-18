@@ -71,8 +71,8 @@ const int depth)
         (x_min, x_max, y_min, y_max, type, \
         dev_ptr, dev_##face##_send_buffer, depth); \
         CUDA_ERR_CHECK; \
-        cudaDeviceSynchronize();\
-        cudaMemcpy(buffer, dev_##face##_send_buffer, buffer_size*sizeof(double), cudaMemcpyDeviceToHost); \
+        hipDeviceSynchronize();\
+        hipMemcpy(buffer, dev_##face##_send_buffer, buffer_size*sizeof(double), hipMemcpyDeviceToHost); \
         CUDA_ERR_CHECK; \
         break; \
 	}
@@ -125,9 +125,9 @@ const int depth)
 {
     #define CALL_UNPACK(dev_ptr, type, face, dir)\
 	{ \
-        cudaMemcpy(dev_##face##_recv_buffer, buffer, buffer_size*sizeof(double), cudaMemcpyHostToDevice); \
+        hipMemcpy(dev_##face##_recv_buffer, buffer, buffer_size*sizeof(double), hipMemcpyHostToDevice); \
         CUDA_ERR_CHECK; \
-        cudaDeviceSynchronize();\
+        hipDeviceSynchronize();\
         const int launch_sz = (ceil((dir##_max+4+type.dir##_extra)/static_cast<float>(BLOCK_SZ))) * depth; \
         device_unpack##face##Buffer<<< launch_sz, BLOCK_SZ >>> \
         (x_min, x_max, y_min, y_max, type, \
@@ -211,7 +211,7 @@ int CloverleafCudaChunk::getBufferSize
 #define CHECK_PACK(op, side1, side2)                            \
     if (external_face != chunk_1 || external_face != chunk_2)   \
     {                                                           \
-        cudaDeviceSynchronize();                                \
+        hipDeviceSynchronize();                                \
     }                                                           \
     if (external_face != chunk_1)                               \
     {                                                           \
@@ -231,7 +231,7 @@ int CloverleafCudaChunk::getBufferSize
     }                                                           \
     if (external_face != chunk_1 || external_face != chunk_2)   \
     {                                                           \
-        cudaDeviceSynchronize();                                \
+        hipDeviceSynchronize();                                \
     }
 
 void CloverleafCudaChunk::pack_left_right
