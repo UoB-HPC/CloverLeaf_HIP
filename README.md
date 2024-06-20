@@ -1,3 +1,6 @@
+> [!WARNING]  
+> Superseded by <https://github.com/UoB-HPC/CloverLeaf>, which contains a HIP implementation, along with many other models.
+
 # CloverLeaf HIP
 
 A version of CloverLeaf ported to HIP using the `hipify-perl` tool.
